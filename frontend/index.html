@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat UI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+    #chat-container {
+      width: 400px;
+      background: #ffffff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    #chat-box {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #fafafa;
+    }
+    .message {
+      margin: 5px 0;
+    }
+    .user {
+      text-align: right;
+      color: blue;
+    }
+    .bot {
+      text-align: left;
+      color: green;
+    }
+    #message-input {
+      width: calc(100% - 60px);
+      padding: 10px;
+      margin-right: 10px;
+    }
+    #send-button {
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <div id="chat-box"></div>
+    <div>
+      <input type="text" id="message-input" placeholder="Type your message here...">
+      <button id="send-button">Send</button>
+    </div>
+  </div>
+
+  <script>
+    async function postJSON(message) {
+      try {
+        const response = await fetch('http://localhost:3000/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message })
+        });
+        const data = await response.json();
+        return data.response;
+      } catch (error) {
+        console.error('Error:', error);
+        return 'Error: Unable to connect to the server';
+      }
+    }
+
+    document.getElementById('send-button').addEventListener('click', async () => {
+      const messageInput = document.getElementById('message-input');
+      const message = messageInput.value;
+      if (!message) return;
+
+      // 사용자 메시지 표시
+      const chatBox = document.getElementById('chat-box');
+      const userMessageElement = document.createElement('div');
+      userMessageElement.classList.add('message', 'user');
+      userMessageElement.textContent = message;
+      chatBox.appendChild(userMessageElement);
+
+      // 입력 필드 초기화
+      messageInput.value = '';
+
+      // 서버에 메시지 전송 및 응답 표시
+      const botResponse = await postJSON(message);
+      const botMessageElement = document.createElement('div');
+      botMessageElement.classList.add('message', 'bot');
+      botMessageElement.textContent = botResponse;
+      chatBox.appendChild(botMessageElement);
+
+      // 스크롤을 최신 메시지로 이동
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+  </script>
+</body>
+</html>
